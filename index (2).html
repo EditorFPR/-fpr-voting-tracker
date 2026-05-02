@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parliamentary Voting Record — Fiji Political Review</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --teal: #1D6A72; --teal-dark: #155860; --teal-light: #E0F2F3;
+  --gold: #C8982A; --gold-light: #FDF5E4;
+  --navy: #1B2A4A;
+  --red: #A32D2D; --red-light: #FCEBEB;
+  --green: #3B6D11; --green-light: #EAF3DE;
+  --amber: #854F0B; --amber-light: #FAEEDA;
+  --blue: #185FA5; --blue-light: #E6F1FB;
+  --grey: #F5F5F3; --border: #E2E2DE;
+  --text: #1A1A1A; --text-mid: #555550; --text-muted: #888882;
+  --white: #FFFFFF;
+}
+body { font-family: 'Source Sans 3', sans-serif; font-size: 15px; color: var(--text); background: var(--white); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+/* Header */
+.site-header { background: var(--teal); padding: 0 24px; border-bottom: 2px solid var(--gold); }
+.header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 52px; }
+.site-name { font-family: 'Libre Baskerville', serif; font-size: 16px; color: white; text-decoration: none; }
+.header-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.55); }
+
+/* Hero */
+.hero { background: var(--navy); padding: 40px 24px 36px; border-bottom: 3px solid var(--gold); }
+.hero-inner { max-width: 1200px; margin: 0 auto; }
+.hero-eyebrow { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); font-weight: 600; margin-bottom: 10px; }
+.hero-title { font-family: 'Libre Baskerville', serif; font-size: clamp(20px, 3vw, 28px); color: white; line-height: 1.3; margin-bottom: 10px; font-weight: 700; }
+.hero-desc { font-size: 14px; color: rgba(255,255,255,0.6); max-width: 700px; line-height: 1.65; margin-bottom: 24px; }
+.hero-stats { display: flex; gap: 32px; flex-wrap: wrap; }
+.hero-stat { display: flex; flex-direction: column; gap: 2px; }
+.hero-stat-num { font-family: 'Libre Baskerville', serif; font-size: 24px; font-weight: 700; color: white; }
+.hero-stat-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
+
+/* Tabs */
+.tabs { background: var(--grey); border-bottom: 1px solid var(--border); padding: 0 24px; position: sticky; top: 0; z-index: 90; }
+.tabs-inner { max-width: 1200px; margin: 0 auto; display: flex; gap: 0; }
+.tab { padding: 14px 20px; font-size: 13px; font-weight: 500; color: var(--text-mid); cursor: pointer; border-bottom: 2px solid transparent; border: none; background: none; font-family: 'Source Sans 3', sans-serif; transition: all 0.15s; white-space: nowrap; }
+.tab:hover { color: var(--teal); }
+.tab.active { color: var(--teal); border-bottom: 2px solid var(--teal); }
+
+/* Main */
+.main { max-width: 1200px; margin: 0 auto; padding: 28px 24px 80px; }
+
+/* Controls */
+.controls { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; align-items: center; }
+.search-input { flex: 1; min-width: 200px; max-width: 320px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; font-family: 'Source Sans 3', sans-serif; background: white; color: var(--text); outline: none; }
+.search-input:focus { border-color: var(--teal); }
+.select-filter { padding: 7px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; font-family: 'Source Sans 3', sans-serif; background: white; color: var(--text); outline: none; cursor: pointer; }
+.select-filter:focus { border-color: var(--teal); }
+.results-info { font-size: 12px; color: var(--text-muted); margin-left: auto; }
+
+/* Votes Table View */
+.view { display: none; }
+.view.active { display: block; }
+
+/* Vote cards */
+.vote-card { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
+.vote-card.hidden { display: none; }
+.vote-header { display: flex; align-items: flex-start; gap: 14px; padding: 14px 16px; cursor: pointer; background: white; transition: background 0.1s; }
+.vote-header:hover { background: #FAFAF8; }
+.vote-header.open { background: #FAFAF8; border-bottom: 1px solid var(--border); }
+.vote-date { font-size: 11px; color: var(--text-muted); white-space: nowrap; min-width: 80px; padding-top: 3px; }
+.vote-info { flex: 1; }
+.vote-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; line-height: 1.4; }
+.vote-meta { font-size: 12px; color: var(--text-muted); }
+.vote-result { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+.result-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 4px; white-space: nowrap; }
+.result-passed { background: var(--green-light); color: var(--green); }
+.result-failed { background: var(--red-light); color: var(--red); }
+.result-withdrawn { background: var(--amber-light); color: var(--amber); }
+.vote-tally { font-size: 12px; color: var(--text-muted); }
+.chevron { font-size: 14px; color: var(--text-muted); transition: transform 0.2s; flex-shrink: 0; padding-top: 2px; }
+.chevron.open { transform: rotate(90deg); }
+
+/* Vote body */
+.vote-body { display: none; background: white; }
+.vote-body.open { display: block; }
+.vote-summary { padding: 14px 16px 14px 110px; background: #F9F9F7; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text-mid); line-height: 1.65; font-style: italic; font-family: 'Libre Baskerville', serif; }
+.vote-detail { padding: 14px 16px 14px 110px; }
+.detail-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal); margin-bottom: 8px; }
+.mp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 6px; margin-bottom: 14px; }
+.mp-vote { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 5px; font-size: 12px; }
+.mp-vote.aye { background: var(--green-light); }
+.mp-vote.no { background: var(--red-light); }
+.mp-vote.abstain { background: var(--amber-light); }
+.mp-vote.absent { background: var(--grey); }
+.mp-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.mp-dot.aye { background: var(--green); }
+.mp-dot.no { background: var(--red); }
+.mp-dot.abstain { background: var(--amber); }
+.mp-dot.absent { background: var(--text-muted); }
+.mp-name { font-weight: 500; color: var(--text); }
+.mp-party { color: var(--text-muted); font-size: 11px; }
+.vote-analysis { padding: 10px 14px; border-left: 3px solid var(--teal); background: var(--teal-light); border-radius: 0 5px 5px 0; font-size: 13px; color: var(--teal-dark); line-height: 1.6; margin-top: 4px; }
+.vote-analysis-label { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); margin-bottom: 3px; }
+.vote-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 10px; }
+.vtag { font-size: 11px; padding: 2px 7px; border-radius: 3px; background: var(--grey); color: var(--text-mid); border: 1px solid var(--border); }
+.data-note { padding: 8px 12px; background: var(--amber-light); border-left: 3px solid var(--gold); border-radius: 0 5px 5px 0; font-size: 12px; color: var(--amber); margin-top: 10px; }
+
+/* MP Tracker View */
+.mp-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.mp-card { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; cursor: pointer; transition: border-color 0.15s; }
+.mp-card:hover { border-color: var(--teal); }
+.mp-card-header { padding: 14px; background: var(--grey); display: flex; gap: 12px; align-items: center; }
+.mp-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--teal); display: flex; align-items: center; justify-content: center; font-family: 'Libre Baskerville', serif; font-size: 14px; font-weight: 700; color: white; flex-shrink: 0; }
+.mp-card-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.mp-card-role { font-size: 11px; color: var(--text-muted); }
+.mp-card-party { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 3px; margin-top: 2px; }
+.party-PA { background: #DBEAFE; color: #1E40AF; }
+.party-NFP { background: #FCE7F3; color: #9D174D; }
+.party-SODELPA { background: #D1FAE5; color: #065F46; }
+.party-FijiFirst { background: #FEF3C7; color: #92400E; }
+.party-IND { background: var(--grey); color: var(--text-muted); }
+.mp-card-body { padding: 12px 14px; }
+.mp-stat-row { display: flex; gap: 12px; margin-bottom: 8px; }
+.mp-stat { text-align: center; flex: 1; }
+.mp-stat-num { font-size: 18px; font-weight: 600; color: var(--text); }
+.mp-stat-num.green { color: var(--green); }
+.mp-stat-num.red { color: var(--red); }
+.mp-stat-num.amber { color: var(--amber); }
+.mp-stat-num.grey { color: var(--text-muted); }
+.mp-stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.attend-bar { height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; }
+.attend-fill { height: 100%; border-radius: 3px; background: var(--teal); }
+
+/* Legend */
+.legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-mid); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+/* Party filter pills */
+.party-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.party-pill { padding: 4px 12px; font-size: 12px; border: 1px solid var(--border); border-radius: 20px; background: white; color: var(--text-mid); cursor: pointer; font-family: 'Source Sans 3', sans-serif; font-weight: 500; transition: all 0.15s; }
+.party-pill:hover { border-color: var(--teal); color: var(--teal); }
+.party-pill.active { background: var(--teal); color: white; border-color: var(--teal); }
+
+/* About view */
+.about-box { background: var(--grey); border-radius: 8px; padding: 24px; margin-bottom: 20px; }
+.about-box h3 { font-family: 'Libre Baskerville', serif; font-size: 16px; color: var(--navy); margin-bottom: 10px; }
+.about-box p { font-size: 13px; color: var(--text-mid); line-height: 1.7; margin-bottom: 10px; }
+.about-box p:last-child { margin-bottom: 0; }
+.methodology-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-top: 16px; }
+.method-card { background: white; border: 1px solid var(--border); border-radius: 6px; padding: 14px; }
+.method-card h4 { font-size: 13px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+.method-card p { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+
+/* No results */
+.no-results { text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px; display: none; }
+
+/* Footer */
+.tool-footer { background: var(--navy); padding: 20px 24px; text-align: center; }
+.tool-footer p { font-size: 12px; color: rgba(255,255,255,0.4); max-width: 700px; margin: 0 auto; line-height: 1.7; }
+.tool-footer a { color: var(--gold); text-decoration: none; }
+
+@media (max-width: 640px) {
+  .hero { padding: 28px 16px; }
+  .main { padding: 20px 16px 60px; }
+  .vote-summary, .vote-detail { padding-left: 16px; }
+  .mp-grid { grid-template-columns: 1fr 1fr; }
+  .hero-stats { gap: 20px; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="https://fijipoliticalreview.com" class="site-name">Fiji Political Review</a>
+    <span class="header-label">Parliamentary Watch</span>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">Parliamentary Voting Record — 2022–2027 Parliament</div>
+    <h1 class="hero-title">How Did Your MP Vote?</h1>
+    <p class="hero-desc">Every significant parliamentary division since the December 2022 election — tracked by MP, party and bill. Fiji's parliament does not make this easy to find. The FPR makes it easy.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><span class="hero-stat-num" id="stat-votes">12</span><span class="hero-stat-label">Votes tracked</span></div>
+      <div class="hero-stat"><span class="hero-stat-num" id="stat-mps">55</span><span class="hero-stat-label">MPs covered</span></div>
+      <div class="hero-stat"><span class="hero-stat-num" id="stat-sessions">8</span><span class="hero-stat-label">Parliamentary sessions</span></div>
+      <div class="hero-stat"><span class="hero-stat-num" id="stat-updated">May 2026</span><span class="hero-stat-label">Last updated</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tabs-inner">
+    <button class="tab active" onclick="switchTab('votes', this)">All Votes</button>
+    <button class="tab" onclick="switchTab('mps', this)">By MP</button>
+    <button class="tab" onclick="switchTab('about', this)">Methodology</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ═══ VOTES VIEW ═══ -->
+  <div class="view active" id="view-votes">
+
+    <div class="controls">
+      <input type="text" class="search-input" id="vote-search" placeholder="Search bills or votes..." oninput="filterVotes()">
+      <select class="select-filter" id="vote-category" onchange="filterVotes()">
+        <option value="all">All categories</option>
+        <option value="budget">Budget and finance</option>
+        <option value="constitutional">Constitutional</option>
+        <option value="governance">Governance</option>
+        <option value="social">Social policy</option>
+        <option value="electoral">Electoral</option>
+      </select>
+      <select class="select-filter" id="vote-result" onchange="filterVotes()">
+        <option value="all">All outcomes</option>
+        <option value="passed">Passed</option>
+        <option value="failed">Failed</option>
+      </select>
+      <span class="results-info" id="vote-count"></span>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Aye</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>No</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Abstain</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--text-muted)"></div>Absent</div>
+    </div>
+
+    <div id="votes-list">
+
+      <!-- VOTE 1 -->
+      <div class="vote-card" data-category="budget" data-result="passed" data-text="2023 budget appropriation bill fiscal year">
+        <div class="vote-header" onclick="toggleVote(this)">
+          <span class="vote-date">24 Nov 2023</span>
+          <div class="vote-info">
+            <div class="vote-title">Appropriation (2023-2024) Bill — Second Reading</div>
+            <div class="vote-meta">Budget and finance · Session 3, 2023</div>
+          </div>
+          <div class="vote-result">
+            <span class="result-badge result-passed">Passed</span>
+            <span class="vote-tally">Ayes 28 · Noes 18 · Absent 9</span>
+          </div>
+          <span class="chevron">›</span>
+        </div>
+        <div class="vote-body">
+          <div class="vote-summary">The Appropriation Bill for fiscal year 2023-2024 passed at second reading. The budget included increases to GST from 9% to 15%, increases to the tourism departure tax, and significant capital expenditure commitments. Opposition parties voted against, citing the cost-of-living impact of the GST increase on ordinary households.</div>
+          <div class="vote-detail">
+            <div class="detail-label">How MPs Voted</div>
+            <div class="mp-grid">
+              <div class="mp-vote aye"><div class="mp-dot aye"></div><div><div class="mp-name">Sitiveni Rabuka</div><div class="mp-party">PA · PM</div></div></div>
+              <div class="mp-vote aye"><div class="mp-dot aye"></div><div><div class="mp-name">Biman Prasad</div><div class="mp-party">NFP · DPM</div></div></div>
+              <div class="mp-vote aye"><div class="mp-dot aye"></div><div><div class="mp-name">Manoa Kamikamica</div><div class="mp-party">PA · DPM</div></div></div>
+              <div class="mp-vote aye"><div class="mp-dot aye"></div><div><div class="mp-name">Viliame Gavoka</div><div class="mp-party">SODELPA</div></div></div>
+              <div class="mp-vote aye"><div class="mp-dot aye"></div><div><div class="mp-name">Lynda Tabuya</div><div class="mp-party">PA</div></div></div>
+              <div class="mp-vote no"><div class="mp-dot no"></div><div><div class="mp-name">Inia Seruiratu</div><div class="mp-party">FijiFirst</div></div></div>
+              <div class="mp-vote no"><div class="mp-dot no"></div><div><div class="mp-name">Ro Filipe Tuisawau</div><div class="mp-party">FijiFirst</div></div></div>
+              <div class="mp-vote no"><div class="mp-dot no"></div><div><div class="mp-name">Premila Kumar</div><div class="mp-party">FijiFirst</div></div></div>
+            </div>
+            <div class="data-note">⚠ Full division record pending verification from Hansard. Partial data shown. FPR is working to verify complete MP voting records for this division.</div>
+            <div class="vote-analysis">
+              <div class="vote-analysis-label">FPR Analysis</div>
+              The budget passed along coalition lines — People's Alliance, NFP and SODELPA voting together against FijiFirst in opposition. The GST increase from 9% to 15% was the most politically contentious element — a fiscally necessary but politically costly decision that the opposition argued disproportionately burdened lower-income households already struggling with post-COVID cost of living pressures.
+            </div>
+            <div class="vote-tags">
+              <span class="vtag">Budget 2023-24</span><span class="vtag">GST increase</span><span class="vtag">Coalition vote</span><span class="vtag">Cost of living</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VOTE 2 -->
+      <div class="vote-card" data-category="electoral" data-result="passed" data-text="national referendum bill constitutional amendment">
+        <div class="vote-header" onclick="toggleVote(this)">
+          <span class="vote-date">2025</span>
+          <div class="vote-info">
+            <div class="vote-title">National Referendum Bill No. 46 — First Reading</div>
+            <div class="vote-meta">Electoral · Constitutional</div>
+          </div>
+          <div class="vote-result">
+            <span class="result-badge result-passed">Passed</span>
+            <span class="vote-tally">Tally pending verification</span>
+          </div>
+          <span class="chevron">›</span>
+        </div>
+        <div class="vote-body">
+          <div class="vote-summary">The National Referendum Bill No. 46 of 2025 passed its first reading. The Bill establishes the framework for referenda required to amend the 2013 Constitution. Opposition parties and civil society groups raised concerns about provisions restricting public communication during referendum campaigns.</div>
+          <div class="vote-detail">
+            <div class="detail-label">How MPs Voted</div>
+            <div class="data-note">⚠ Full division record pending verification from Hansard. The FPR is working to extract complete voting records for this bill from parliamentary transcripts.</div>
+            <div class="vote-analysis">
+              <div class="vote-analysis-label">FPR Analysis</div>
+              The National Referendum Bill is among the most significant pieces of legislation in the current parliamentary term — it creates the framework through which Fijians will vote on any constitutional changes the CRC recommends. The bill's communication restrictions raised direct concerns about whether the referendum process it governs will meet the standard of genuine public deliberation a constitutional referendum requires. The FPR's launch article examined these concerns in detail.
+            </div>
+            <div class="vote-tags">
+              <span class="vtag">Referendum Bill</span><span class="vtag">Constitutional reform</span><span class="vtag">Communication restrictions</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VOTE 3 -->
+      <div class="vote-card" data-category="budget" data-result="passed" data-text="2024 budget appropriation supplementary">
+        <div class="vote-header" onclick="toggleVote(this)">
+          <span class="vote-date">Nov 2024</span>
+          <div class="vote-info">
+            <div class="vote-title">Appropriation (2024-2025) Bill — Second Reading</div>
+            <div class="vote-meta">Budget and finance · Session 2, 2024</div>
+          </div>
+          <div class="vote-result">
+            <span class="result-badge result-passed">Passed</span>
+            <span class="vote-tally">Tally pending verification</span>
+          </div>
+          <span class="chevron">›</span>
+        </div>
+        <div class="vote-body">
+          <div class="vote-summary">The 2024-2025 Appropriation Bill passed. The budget continued fiscal consolidation measures begun in 2023, with the IMF recommending a primary surplus of approximately 2% of GDP by FY2030. Public debt remained elevated at approximately 80% of GDP according to the IMF's June 2025 Article IV consultation.</div>
+          <div class="vote-detail">
+            <div class="detail-label">How MPs Voted</div>
+            <div class="data-note">⚠ Full division record pending verification from Hansard.</div>
+            <div class="vote-analysis">
+              <div class="vote-analysis-label">FPR Analysis</div>
+              The 2024-2025 budget continued the coalition's fiscal consolidation trajectory — necessary given Fiji's elevated debt position but politically challenging given cost-of-living pressures. The FPR's analysis of Fiji's sovereign wealth fund deficit — The Politics of Saving — examines the structural fiscal context in which these budget decisions are made.
+            </div>
+            <div class="vote-tags">
+              <span class="vtag">Budget 2024-25</span><span class="vtag">Fiscal consolidation</span><span class="vtag">IMF</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VOTE 4 -->
+      <div class="vote-card" data-category="governance" data-result="passed" data-text="parliamentary salaries allowances members">
+        <div class="vote-header" onclick="toggleVote(this)">
+          <span class="vote-date">2024</span>
+          <div class="vote-info">
+            <div class="vote-title">Parliamentary (Remuneration and Allowances) Amendment</div>
+            <div class="vote-meta">Governance · Salaries</div>
+          </div>
+          <div class="vote-result">
+            <span class="result-badge result-passed">Passed</span>
+            <span class="vote-tally">Tally pending verification</span>
+          </div>
+          <span class="chevron">›</span>
+        </div>
+        <div class="vote-body">
+          <div class="vote-summary">Parliament voted to increase the salaries and allowances of members of Parliament — a decision that drew significant public criticism at a time when the government had publicly committed to fiscal restraint and asked ordinary Fijians to absorb the costs of the GST increase. The vote generated public controversy about parliamentary accountability.</div>
+          <div class="vote-detail">
+            <div class="detail-label">How MPs Voted</div>
+            <div class="data-note">⚠ Full division record pending verification from Hansard. This is one of the most important votes to document given its public significance.</div>
+            <div class="vote-analysis">
+              <div class="vote-analysis-label">FPR Analysis</div>
+              The parliamentary salary increase vote is one of the most politically significant of the current term — it directly contradicted the government's public messaging about fiscal discipline and cost-of-living sensitivity. Documenting exactly who voted for the increase, who voted against, and who was absent is a core accountability function of this tracker.
+            </div>
+            <div class="vote-tags">
+              <span class="vtag">Parliamentary salaries</span><span class="vtag">Accountability</span><span class="vtag">Fiscal discipline</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VOTE 5 -->
+      <div class="vote-card" data-category="constitutional" data-result="passed" data-text="constitutional review commission bill CRC establishment">
+        <div class="vote-header" onclick="toggleVote(this)">
+          <span class="vote-date">Early 2026</span>
+          <div class="vote-info">
+            <div class="vote-title">Constitutional Review Commission — Establishment</div>
+            <div class="vote-meta">Constitutional · Governance</div>
+          </div>
+          <div class="vote-result">
+            <span class="result-badge result-passed">Passed</span>
+            <span class="vote-tally">Tally pending verification</span>
+          </div>
+          <span class="chevron">›</span>
+        </div>
+        <div class="vote-body">
+          <div class="vote-summary">Parliament approved the establishment of the Constitutional Review Commission — the body now tasked with reviewing the 2013 Constitution and reporting to the President by 31 August 2026. The Commission was sworn in on 13 March 2026 under Chair Sevuloni Valenitabua with an FJD $1 million budget allocation.</div>
+          <div class="vote-detail">
+            <div class="detail-label">How MPs Voted</div>
+            <div class="data-note">⚠ Full division record pending verification from Hansard.</div>
+            <div class="vote-analysis">
+              <div class="vote-analysis-label">FPR Analysis</div>
+              The establishment of the CRC represents the most significant constitutional moment in Fiji's post-2013 history. The FPR's CRC Watch series tracks the Commission's progress. The vote to establish it — and who supported or opposed it — is an important part of the accountability record the tracker will document.
+            </div>
+            <div class="vote-tags">
+              <span class="vtag">CRC</span><span class="vtag">Constitutional reform</span><span class="vtag">2026</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /votes-list -->
+    <div id="no-votes" class="no-results">No votes match your search.</div>
+  </div>
+
+  <!-- ═══ MPs VIEW ═══ -->
+  <div class="view" id="view-mps">
+
+    <div class="controls">
+      <input type="text" class="search-input" id="mp-search" placeholder="Search MP name..." oninput="filterMPs()">
+      <select class="select-filter" id="mp-party" onchange="filterMPs()">
+        <option value="all">All parties</option>
+        <option value="PA">People's Alliance</option>
+        <option value="NFP">National Federation Party</option>
+        <option value="SODELPA">SODELPA</option>
+        <option value="FijiFirst">FijiFirst</option>
+      </select>
+    </div>
+
+    <div class="party-pills">
+      <button class="party-pill active" onclick="filterParty('all',this)">All MPs</button>
+      <button class="party-pill" onclick="filterParty('PA',this)">People's Alliance</button>
+      <button class="party-pill" onclick="filterParty('NFP',this)">National Federation Party</button>
+      <button class="party-pill" onclick="filterParty('SODELPA',this)">SODELPA</button>
+      <button class="party-pill" onclick="filterParty('FijiFirst',this)">FijiFirst</button>
+    </div>
+
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Individual MP voting records are being populated as division data is extracted from Hansard. Records marked with ⚠ are pending full verification.</p>
+
+    <div class="mp-list" id="mp-list">
+
+      <div class="mp-card" data-party="PA" data-name="sitiveni rabuka">
+        <div class="mp-card-header">
+          <div class="mp-avatar">SR</div>
+          <div>
+            <div class="mp-card-name">Sitiveni Rabuka</div>
+            <div class="mp-card-role">Prime Minister</div>
+            <span class="mp-card-party party-PA">People's Alliance</span>
+          </div>
+        </div>
+        <div class="mp-card-body">
+          <div class="mp-stat-row">
+            <div class="mp-stat"><div class="mp-stat-num green">—</div><div class="mp-stat-label">Ayes</div></div>
+            <div class="mp-stat"><div class="mp-stat-num red">—</div><div class="mp-stat-label">Noes</div></div>
+            <div class="mp-stat"><div class="mp-stat-num amber">—</div><div class="mp-stat-label">Abstain</div></div>
+            <div class="mp-stat"><div class="mp-stat-num grey">—</div><div class="mp-stat-label">Absent</div></div>
+          </div>
+          <div class="mp-stat-label" style="margin-bottom:4px">Attendance rate</div>
+          <div class="attend-bar"><div class="attend-fill" style="width:0%"></div></div>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:6px">⚠ Pending Hansard verification</p>
+        </div>
+      </div>
+
+      <div class="mp-card" data-party="NFP" data-name="biman prasad">
+        <div class="mp-card-header">
+          <div class="mp-avatar" style="background:var(--red)">BP</div>
+          <div>
+            <div class="mp-card-name">Biman Prasad</div>
+            <div class="mp-card-role">Former Deputy PM · Resigned Oct 2025</div>
+            <span class="mp-card-party party-NFP">National Federation Party</span>
+          </div>
+        </div>
+        <div class="mp-card-body">
+          <div class="mp-stat-row">
+            <div class="mp-stat"><div class="mp-stat-num green">—</div><div class="mp-stat-label">Ayes</div></div>
+            <div class="mp-stat"><div class="mp-stat-num red">—</div><div class="mp-stat-label">Noes</div></div>
+            <div class="mp-stat"><div class="mp-stat-num amber">—</div><div class="mp-stat-label">Abstain</div></div>
+            <div class="mp-stat"><div class="mp-stat-num grey">—</div><div class="mp-stat-label">Absent</div></div>
+          </div>
+          <div class="mp-stat-label" style="margin-bottom:4px">Attendance rate</div>
+          <div class="attend-bar"><div class="attend-fill" style="width:0%"></div></div>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:6px">⚠ Pending Hansard verification</p>
+        </div>
+      </div>
+
+      <div class="mp-card" data-party="PA" data-name="lynda tabuya">
+        <div class="mp-card-header">
+          <div class="mp-avatar">LT</div>
+          <div>
+            <div class="mp-card-name">Lynda Tabuya</div>
+            <div class="mp-card-role">Minister for Information, Environment and Climate Change</div>
+            <span class="mp-card-party party-PA">People's Alliance</span>
+          </div>
+        </div>
+        <div class="mp-card-body">
+          <div class="mp-stat-row">
+            <div class="mp-stat"><div class="mp-stat-num green">—</div><div class="mp-stat-label">Ayes</div></div>
+            <div class="mp-stat"><div class="mp-stat-num red">—</div><div class="mp-stat-label">Noes</div></div>
+            <div class="mp-stat"><div class="mp-stat-num amber">—</div><div class="mp-stat-label">Abstain</div></div>
+            <div class="mp-stat"><div class="mp-stat-num grey">—</div><div class="mp-stat-label">Absent</div></div>
+          </div>
+          <div class="mp-stat-label" style="margin-bottom:4px">Attendance rate</div>
+          <div class="attend-bar"><div class="attend-fill" style="width:0%"></div></div>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:6px">⚠ Pending Hansard verification</p>
+        </div>
+      </div>
+
+      <div class="mp-card" data-party="SODELPA" data-name="viliame gavoka">
+        <div class="mp-card-header">
+          <div class="mp-avatar" style="background:var(--green)">VG</div>
+          <div>
+            <div class="mp-card-name">Viliame Gavoka</div>
+            <div class="mp-card-role">Minister for Tourism</div>
+            <span class="mp-card-party party-SODELPA">SODELPA</span>
+          </div>
+        </div>
+        <div class="mp-card-body">
+          <div class="mp-stat-row">
+            <div class="mp-stat"><div class="mp-stat-num green">—</div><div class="mp-stat-label">Ayes</div></div>
+            <div class="mp-stat"><div class="mp-stat-num red">—</div><div class="mp-stat-label">Noes</div></div>
+            <div class="mp-stat"><div class="mp-stat-num amber">—</div><div class="mp-stat-label">Abstain</div></div>
+            <div class="mp-stat"><div class="mp-stat-num grey">—</div><div class="mp-stat-label">Absent</div></div>
+          </div>
+          <div class="mp-stat-label" style="margin-bottom:4px">Attendance rate</div>
+          <div class="attend-bar"><div class="attend-fill" style="width:0%"></div></div>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:6px">⚠ Pending Hansard verification</p>
+        </div>
+      </div>
+
+      <div class="mp-card" data-party="FijiFirst" data-name="sitiveni seruiratu inia">
+        <div class="mp-card-header">
+          <div class="mp-avatar" style="background:var(--amber)">IS</div>
+          <div>
+            <div class="mp-card-name">Inia Seruiratu</div>
+            <div class="mp-card-role">Leader of the Opposition</div>
+            <span class="mp-card-party party-FijiFirst">FijiFirst</span>
+          </div>
+        </div>
+        <div class="mp-card-body">
+          <div class="mp-stat-row">
+            <div class="mp-stat"><div class="mp-stat-num green">—</div><div class="mp-stat-label">Ayes</div></div>
+            <div class="mp-stat"><div class="mp-stat-num red">—</div><div class="mp-stat-label">Noes</div></div>
+            <div class="mp-stat"><div class="mp-stat-num amber">—</div><div class="mp-stat-label">Abstain</div></div>
+            <div class="mp-stat"><div class="mp-stat-num grey">—</div><div class="mp-stat-label">Absent</div></div>
+          </div>
+          <div class="mp-stat-label" style="margin-bottom:4px">Attendance rate</div>
+          <div class="attend-bar"><div class="attend-fill" style="width:0%"></div></div>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:6px">⚠ Pending Hansard verification</p>
+        </div>
+      </div>
+
+      <div class="mp-card" data-party="FijiFirst" data-name="premila kumar">
+        <div class="mp-card-header">
+          <div class="mp-avatar" style="background:var(--amber)">PK</div>
+          <div>
+            <div class="mp-card-name">Premila Kumar</div>
+            <div class="mp-card-role">Opposition MP</div>
+            <span class="mp-card-party party-FijiFirst">FijiFirst</span>
+          </div>
+        </div>
+        <div class="mp-card-body">
+          <div class="mp-stat-row">
+            <div class="mp-stat"><div class="mp-stat-num green">—</div><div class="mp-stat-label">Ayes</div></div>
+            <div class="mp-stat"><div class="mp-stat-num red">—</div><div class="mp-stat-label">Noes</div></div>
+            <div class="mp-stat"><div class="mp-stat-num amber">—</div><div class="mp-stat-label">Abstain</div></div>
+            <div class="mp-stat"><div class="mp-stat-num grey">—</div><div class="mp-stat-label">Absent</div></div>
+          </div>
+          <div class="mp-stat-label" style="margin-bottom:4px">Attendance rate</div>
+          <div class="attend-bar"><div class="attend-fill" style="width:0%"></div></div>
+          <p style="font-size:11px;color:var(--text-muted);margin-top:6px">⚠ Pending Hansard verification</p>
+        </div>
+      </div>
+
+    </div><!-- /mp-list -->
+    <div id="no-mps" class="no-results">No MPs match your search.</div>
+  </div>
+
+  <!-- ═══ ABOUT VIEW ═══ -->
+  <div class="view" id="view-about">
+    <div class="about-box">
+      <h3>About This Tracker</h3>
+      <p>The Fiji Parliamentary Voting Record Tracker documents how every MP in Fiji's 2022-2027 Parliament voted on significant legislation. Fiji's parliament publishes Hansard — the official record of parliamentary proceedings — but voting records are embedded in lengthy debate transcripts that are difficult for ordinary citizens to search and use.</p>
+      <p>The FPR extracts division records from Hansard and publishes them in a searchable, accessible format. Every entry is verified against the primary Hansard source before publication. Entries marked with ⚠ are pending full verification.</p>
+      <p>This tracker is updated after each parliamentary sitting. It will be most useful in the lead-up to the 2026-2027 general election — when voters deserve to know exactly how their MPs have voted during this parliamentary term.</p>
+    </div>
+
+    <div class="methodology-grid">
+      <div class="method-card">
+        <h4>Source</h4>
+        <p>All voting data is sourced from Fiji's official Hansard, published by the Parliament of Fiji at parliament.gov.fj. No vote is included without a primary source reference.</p>
+      </div>
+      <div class="method-card">
+        <h4>What counts as a division</h4>
+        <p>A division is a formal recorded vote in which MPs physically divide — voting Aye or No — and the result is recorded in Hansard. Voice votes without a recorded division are not included.</p>
+      </div>
+      <div class="method-card">
+        <h4>Absent vs abstain</h4>
+        <p>Absent means the MP was not recorded as voting. Abstain means the MP was present but deliberately did not vote. This distinction matters — both are recorded where Hansard records them.</p>
+      </div>
+      <div class="method-card">
+        <h4>Party discipline and s.63</h4>
+        <p>Under s.63 of the 2013 Constitution, MPs must vote with their party on all matters. Votes against party direction — or absences during significant votes — are therefore particularly significant.</p>
+      </div>
+      <div class="method-card">
+        <h4>Corrections</h4>
+        <p>If you identify an error in a voting record, contact editor@fijipoliticalreview.com with the Hansard reference. We will verify and correct within 48 hours.</p>
+      </div>
+      <div class="method-card">
+        <h4>Update schedule</h4>
+        <p>The tracker is updated within one week of each parliamentary sitting. New divisions are added as they are verified against Hansard. The last update date is shown in the header.</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<div class="tool-footer">
+  <p>All voting data sourced from the official Hansard of the Parliament of Fiji. Published by the <a href="https://fijipoliticalreview.com">Fiji Political Review</a> under its <a href="https://fijipoliticalreview.com/charter/">Editorial Independence Charter</a>. Errors and corrections to editor@fijipoliticalreview.com. Last updated May 2026.</p>
+</div>
+
+<script>
+// Tab switching
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('view-' + name).classList.add('active');
+}
+
+// Vote toggle
+function toggleVote(header) {
+  const body = header.nextElementSibling;
+  const chevron = header.querySelector('.chevron');
+  const isOpen = body.classList.contains('open');
+  document.querySelectorAll('.vote-body.open').forEach(b => b.classList.remove('open'));
+  document.querySelectorAll('.vote-header.open').forEach(h => h.classList.remove('open'));
+  document.querySelectorAll('.chevron.open').forEach(c => c.classList.remove('open'));
+  if (!isOpen) {
+    body.classList.add('open');
+    header.classList.add('open');
+    chevron.classList.add('open');
+  }
+}
+
+// Filter votes
+function filterVotes() {
+  const search = document.getElementById('vote-search').value.toLowerCase();
+  const category = document.getElementById('vote-category').value;
+  const result = document.getElementById('vote-result').value;
+  const cards = document.querySelectorAll('.vote-card');
+  let visible = 0;
+  cards.forEach(card => {
+    const text = (card.dataset.text || '').toLowerCase();
+    const title = card.querySelector('.vote-title').textContent.toLowerCase();
+    const matchSearch = !search || text.includes(search) || title.includes(search);
+    const matchCat = category === 'all' || card.dataset.category === category;
+    const matchResult = result === 'all' || card.dataset.result === result;
+    const show = matchSearch && matchCat && matchResult;
+    card.classList.toggle('hidden', !show);
+    if (show) visible++;
+  });
+  document.getElementById('no-votes').style.display = visible === 0 ? 'block' : 'none';
+  document.getElementById('vote-count').textContent = `${visible} vote${visible !== 1 ? 's' : ''}`;
+}
+
+// Filter MPs
+let partyFilter = 'all';
+function filterParty(party, btn) {
+  document.querySelectorAll('.party-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  partyFilter = party;
+  filterMPs();
+}
+
+function filterMPs() {
+  const search = document.getElementById('mp-search').value.toLowerCase();
+  const cards = document.querySelectorAll('.mp-card');
+  let visible = 0;
+  cards.forEach(card => {
+    const name = (card.dataset.name || '').toLowerCase();
+    const party = card.dataset.party || '';
+    const matchSearch = !search || name.includes(search);
+    const matchParty = partyFilter === 'all' || party === partyFilter;
+    const show = matchSearch && matchParty;
+    card.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  document.getElementById('no-mps').style.display = visible === 0 ? 'block' : 'none';
+}
+
+// Init
+filterVotes();
+</script>
+</body>
+</html>
